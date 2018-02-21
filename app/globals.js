@@ -93,8 +93,8 @@ export function addAmbient(app, intensity) {
   }).addTo(app);
 }
 
-export function addBasicLights(app, intensity = 0.5, position = [0, 10, 10], distance = 100, shadowmap) {
-  addAmbient(app, 1 - intensity);
+export function addBasicLights(app, intensity = 0.5, position = [0, 10, 10], distance = 150, shadowmap) {
+  addAmbient(app, 0.3);
 
   return new WHS.PointLight({
     intensity,

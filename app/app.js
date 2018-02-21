@@ -25,9 +25,79 @@ const app = new WHS.App([
 import {FancyMaterialModule} from './modules/FancyMaterialModule';
 import {BasicComponent} from './components/BasicComponent';
 
+const slushySnowMat = new THREE.MeshPhongMaterial({
+  color: 0xffffff,
+  shininess: 50,
+  side: THREE.DoubleSide,
+  //wireframe: true,
+  map: new THREE.TextureLoader().load('assets/snow/diffuse.jpg', map => {
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(1,1)
+  }),
+  aoMap: new THREE.TextureLoader().load('assets/snow/ambientocclusion.jpg'),
+  aoMapIntensity: 0.5,
+  normalMap: new THREE.TextureLoader().load('assets/snow/normal.jpg'),
+  normalScale: new THREE.Vector2(1,1),
+  specularMap: new THREE.TextureLoader().load('assets/snow/reflectiveocclusion.jpg'),
+  bumpMap: new THREE.TextureLoader().load('assets/snow/bump.jpg'),
+  bumpScale: 2,
+  displacementMap: null,
+  displacementScale: 1,
+  emissiveMap: null,
+  emissiveIntensity: 1,
+  lightMap: null,
+  lightMapIntensity: 1,
+  needsUpdate: true
+});
+
+const deepSnowMat = new THREE.MeshPhongMaterial({
+  color: 0xffffff,
+  shininess: 30,
+  side: THREE.DoubleSide,
+  //wireframe: true,
+  normalMap: new THREE.TextureLoader().load('assets/snow-deep/normal.jpg', map => {
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(5,5)
+  }),
+  normalScale: new THREE.Vector2(1,1),
+  bumpMap: new THREE.TextureLoader().load('assets/snow-deep/bump.jpg'),
+  bumpScale: 2,
+  specularMap: new THREE.TextureLoader().load('assets/snow/reflectiveocclusion.jpg', map => {
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(5,5)
+  }),
+  displacementMap: new THREE.TextureLoader().load('assets/snow-deep/bump.jpg'),
+  displacementScale: 12,
+  emissiveMap: null,
+  emissiveIntensity: 1,
+  lightMap: null,
+  lightMapIntensity: 1,
+  needsUpdate: true
+});
+
 
 //UTILS.addBoxPlane(app);
-UTILS.addBasicLights(app);
+
+const addBasicLights = (app, intensity = 0.5, position = [0, 10, 10], distance = 150, shadowmap) => {
+  const ambient = new WHS.AmbientLight({
+    intensity: 0.3,
+    color: 0xddddff,
+  }).addTo(app);
+
+  const point = new WHS.PointLight({
+    intensity,
+    distance,
+    color: 0xffbb55,
+
+    shadow: Object.assign({
+      fov: 90
+    }, shadowmap),
+
+    position
+  }).addTo(app);
+}
+
+addBasicLights(app);
 
 // u, v go 0=>1
 const func = (u, v) =>
@@ -51,11 +121,7 @@ const terrain = new WHS.Parametric({
     cast: false
   },
 
-  material: new THREE.MeshPhongMaterial({
-    color: 0xdddddd,//sUTILS.$colors.mesh,
-    side: THREE.DoubleSide,
-    wireframe: true,
-  }),
+  material: deepSnowMat, //slushySnowMat,
 
   modules: [
     new PHYSICS.HeightfieldModule({
@@ -70,78 +136,32 @@ const terrain = new WHS.Parametric({
 
 console.log(terrain.geometry.vertices, {terrain})
 
-terrain.addTo(app);
+//terrain.addTo(app);
 
-
-const teapot = new WHS.Importer({
-  url: `${process.assetsPath}/models/teapot/utah-teapot-large.json`,
-
-  modules: [
-    new PHYSICS.ConcaveModule({
-      friction: 1,
-      mass: 200,
-      restitution: 0.5,
-      path: `${process.assetsPath}/models/teapot/utah-teapot-light.json`,
-      scale: new THREE.Vector3(4, 4, 4)
-    }),
-    new WHS.TextureModule({
-      url: `${process.assetsPath}/textures/teapot.jpg`,
-      repeat: new THREE.Vector2(1, 1)
-    })
-  ],
-
-  useCustomMaterial: true,
-
-  material: new THREE.MeshPhongMaterial({
-    shading: THREE.SmoothShading,
-    side: THREE.DoubleSide
-  }),
-
-  position: {
-    y: 100
-  },
-
-  scale: [4, 4, 4]
-});
-// app.add(new BasicComponent({
-//   modules: [
-//     new FancyMaterialModule(app)
-//   ],
-//   position: new THREE.Vector3(10, 5, 0),
-// }));
-
-// const sphere = new THREE.Mesh(
-//   new THREE.SphereGeometry(3, 5, 12),
-//   new THREE.MeshPhongMaterial({
-//     color: UTILS.$colors.mesh
-//   }),
-// )
-// sphere.physics = false;
-//app.add(sphere)
 
 const sphere = new WHS.Sphere({ // Create sphere comonent.
   geometry: {
-    radius: 5,
+    radius: 15,
     widthSegments: 32,
     heightSegments: 32
   },
 
   modules: [
     new PHYSICS.SphereModule({
-      mass: 10,
+      mass: 0,
       restitution: 1
     })
   ],
 
-  material: new THREE.MeshPhongMaterial({
-    color: UTILS.$colors.mesh
-  }),
+  material: deepSnowMat,
 
-  position: new THREE.Vector3(9, 50, 0)
+  position: new THREE.Vector3(8, 20, 0)
 });
 app.add(sphere)
 
-app.start()
+terrain.addTo(app).then(() => {
+  app.start()
+})
 
 console.log({app})
 
