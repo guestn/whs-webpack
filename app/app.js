@@ -61,11 +61,14 @@ const deepSnowMat = new THREE.MeshPhongMaterial({
   }),
   normalScale: new THREE.Vector2(1,1),
   bumpMap: new THREE.TextureLoader().load('assets/snow-deep/bump.jpg'),
-  bumpScale: 2,
+  bumpScale: 6,
   specularMap: new THREE.TextureLoader().load('assets/snow/reflectiveocclusion.jpg', map => {
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
     map.repeat.set(5,5)
   }),
+  specular: 0x0000ff,
+  aoMap: new THREE.TextureLoader().load('assets/snow/ambientocclusion.jpg'),
+  aoMapIntensity: 1,
   displacementMap: new THREE.TextureLoader().load('assets/snow-deep/bump.jpg'),
   displacementScale: 12,
   emissiveMap: null,
@@ -78,16 +81,16 @@ const deepSnowMat = new THREE.MeshPhongMaterial({
 
 //UTILS.addBoxPlane(app);
 
-const addBasicLights = (app, intensity = 0.5, position = [0, 10, 10], distance = 150, shadowmap) => {
+const addBasicLights = (app, intensity = 0.5, position = [-20, 50, 10], distance = 150, shadowmap) => {
   const ambient = new WHS.AmbientLight({
-    intensity: 0.3,
+    intensity: 0.27,
     color: 0xddddff,
   }).addTo(app);
 
   const point = new WHS.PointLight({
     intensity,
     distance,
-    color: 0xffbb55,
+    color: 0xff8800,
 
     shadow: Object.assign({
       fov: 90
@@ -148,7 +151,7 @@ const sphere = new WHS.Sphere({ // Create sphere comonent.
 
   modules: [
     new PHYSICS.SphereModule({
-      mass: 0,
+      mass: 1,
       restitution: 1
     })
   ],
@@ -158,6 +161,26 @@ const sphere = new WHS.Sphere({ // Create sphere comonent.
   position: new THREE.Vector3(8, 20, 0)
 });
 app.add(sphere)
+
+const sphere2 = new WHS.Sphere({ // Create sphere comonent.
+  geometry: {
+    radius: 15, 
+    widthSegments: 32,
+    heightSegments: 32
+  },
+
+  modules: [
+    new PHYSICS.SphereModule({
+      mass: 0,
+      restitution: 1
+    })
+  ],
+
+  material: deepSnowMat,
+
+  position: new THREE.Vector3(-50, 30, 0)
+});
+app.add(sphere2)
 
 terrain.addTo(app).then(() => {
   app.start()
